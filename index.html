@@ -196,6 +196,9 @@ nav button{font-size:.6rem}nav svg{width:23px;height:23px}
 <div class="note" id="rn"></div>
 <h3>Qué hacer en combate, en orden</h3>
 <ol class="rot" id="rot"></ol>
+<h3>Cuándo usar cada habilidad</h3>
+<div class="ab" id="wh"></div>
+<div id="pets"></div>
 <h3>Tus habilidades a nivel <span id="ln">3</span></h3>
 <div class="ab" id="ab"></div>
 </section>
@@ -360,13 +363,14 @@ return["Acércate con <b>Stealth</b> activo y empieza con <b>Sinister Strike</b>
 function rotation(){if(CH[ST3.cur].k!=="rogue"){rotX();return}
 var r=[],pvp=S.mode==="pvp",L=S.lv;
 if(!pvp){
+if(L>=20)r.push("Antes de pelear, comprueba el veneno en tus dos armas (macros en la pestaña Macros).");
 if(has("Stealth"))r.push("Activa <b>Stealth</b> antes de acercarte al grupo de enemigos.");
 opener().forEach(function(x){r.push(x)});
-r.push(has("Backstab")?"Genera puntos de combo con <b>Backstab</b> (por la espalda) y, si no puedes, <b>Sinister Strike</b>.":"Genera puntos de combo con <b>Sinister Strike</b>.");
+r.push(has("Backstab")?"Genera puntos de combo con <b>Backstab</b> (por la espalda) y, si no puedes ponerte detrás, <b>Sinister Strike</b>.":"Genera puntos de combo con <b>Sinister Strike</b>.");if(has("Shank"))r.push("<b>Shank</b> en cada enfriamiento (10 s) si tu energía está por debajo de 85: no falla y te da energía. Con la energía llena, gasta antes en tu generador.");
 if(has("Slice and Dice"))r.push("Con 1-2 puntos y sin tenerlo activo, usa <b>Slice and Dice</b>. Si hay más de un enemigo, siempre.");
 if(has("Rupture"))r.push("Si el objetivo va a durar más de 12 s, aplica <b>Rupture</b> con 3-4 puntos.");
 r.push(has("Eviscerate")?"Remata con <b>Eviscerate</b> con "+(L<10?"3":"4-5")+" puntos de combo. Con enemigos casi muertos, usa 2.":"Sigue con tu golpe básico.");
-if(has("Shank"))r.push("Usa <b>Shank</b> cada vez que esté disponible (10 s), si no te pasas del tope de energía: no falla y te da energía.");if(has("Riposte"))r.push("Cuando pares un golpe, usa <b>Riposte</b> para desarmar al enemigo.");if(has("Blade Flurry"))r.push("Con 2 enemigos cerca, activa <b>Blade Flurry</b>.");if(has("Adrenaline Rush"))r.push("En combates largos, <b>Adrenaline Rush</b> para ir sobrado de energía.");
+if(has("Riposte"))r.push("Cuando pares un golpe, usa <b>Riposte</b> para desarmar al enemigo.");if(has("Blade Flurry"))r.push("Con 2 enemigos cerca, activa <b>Blade Flurry</b>.");if(has("Adrenaline Rush"))r.push("En combates largos, <b>Adrenaline Rush</b> para ir sobrado de energía.");
 if(has("Sap"))r.push("Si hay varios humanoides, <b>Sap</b> a uno desde sigilo y pelea de uno en uno.");
 if(has("Kick"))r.push("Si el enemigo lanza un hechizo o cura, <b>Kick</b> inmediato.");
 if(has("Evasion"))r.push("Si te rodean 2 o más, o bajas del 50% de vida, pulsa <b>Evasion</b>.");
@@ -396,8 +400,8 @@ if(has("Sprint"))r.push("<b>Sprint</b> para alcanzar al que huye o para llegar a
 }
 $("rot").innerHTML=decor(r);
 var nxt=AB.filter(function(a){return a[1]>L})[0];
-$("rn").innerHTML=(S.wp!=="dg"?"Con dos espadas o hachas tu golpe principal es <b>Sinister Strike</b>; Backstab y Ambush solo valen con daga. ":"")+(pvp?"En PvP: ve a por un solo objetivo con tu grupo y no te separes. ":"Subiendo: no tires de muchos enemigos a la vez. ")+(nxt?"Cuando llegues al nivel "+nxt[1]+" aprenderás <b>"+nxt[0]+"</b>.":"Tienes todas las habilidades de la lista.");
-$("ln").textContent=L;bar();money();tal();
+$("rn").innerHTML=(S.wp!=="dg"?"Con dos espadas o hachas tu golpe principal es <b>Sinister Strike</b>; Backstab y Ambush solo valen con daga. ":"Con dos dagas, <b>Ambush</b> y <b>Backstab</b> siempre por la espalda, y <b>Shank</b> sale de la daga izquierda. ")+(pvp?"En PvP: ve a por un solo objetivo con tu grupo y no te separes. ":"Subiendo: no tires de muchos enemigos a la vez. ")+(nxt?"Cuando llegues al nivel "+nxt[1]+" aprenderás <b>"+nxt[0]+"</b>.":"Tienes todas las habilidades de la lista.");
+$("ln").textContent=L;bar();money();tal();whx();pets();
 $("ab").innerHTML=AB.map(function(a){var on=a[1]<=L,dg=on&&!has(a[0]);return'<div class="'+(on&&!dg?'':'off')+'"><b>'+ai(a[0])+nm(a[0])+'<em>'+(dg?'Solo daga':on?'Sí':'Nv. '+a[1])+'</em></b>'+a[2]+'</div>'}).join("");
 $("mp").setAttribute("aria-pressed",!pvp);$("mv").setAttribute("aria-pressed",pvp);$("ws").setAttribute("aria-pressed",S.wp!=="dg");$("wd").setAttribute("aria-pressed",S.wp==="dg");
 }
@@ -413,7 +417,7 @@ function ic(n){return TI[n]?'<img class="ic" alt="" src="'+TI[n]+'"> ':''}
 var h='<div class="note">';
 if(!cu)h+='<b>Todav\u00eda no tienes talentos.</b> El primer punto llega al nivel 10. Sube hasta ah\u00ed y vuelve a esta pesta\u00f1a.';
 else h+='<b>Tu \u00faltimo punto (nivel '+cu[0]+'):</b> '+ic(cu[1])+'<b>'+nm(cu[1])+'</b> '+cu[2]+'.';
-if(nx)h+='<br>Siguiente, al nivel '+nx[0]+': '+ic(nx[1])+'<b>'+nm(nx[1])+'</b> '+nx[2]+'.';else h+='<br>Build completa: ya has gastado todos los puntos del v\u00eddeo.';
+if(nx)h+='<br>Siguiente, al nivel '+nx[0]+': '+ic(nx[1])+'<b>'+nm(nx[1])+'</b> '+nx[2]+'.';else h+='<br>Build completa: ya has gastado todos los puntos del v\u00eddeo.';if(S.wp==="dg"&&L>=26)h+='<br>Ojo: con dagas, <b>Hack and Slash</b> (niveles 31-41) solo mejora espadas y hachas.';
 h+='</div><p>Puntos gastados: <b>'+done.length+'</b> de 51. Combate <b>'+C+'</b> \u00b7 Asesinato <b>'+A+'</b>.</p><div class="bar"><i style="width:'+(done.length/51*100)+'%"></i></div>';
 var seen=[],g='';TL.forEach(function(e){if(seen.indexOf(e[1])>-1)return;seen.push(e[1]);var mx=0,tot=e[2].split('/')[1];done.forEach(function(d){if(d[1]===e[1])mx=+d[2].split('/')[0]});
 g+='<div class="sl'+(mx?'':' off')+(mx==+tot?' use':'')+'"><span class="g"><img alt="" src="'+TI[e[1]]+'"></span><b>'+nm(e[1])+'</b><small>'+mx+'/'+tot+(TA.indexOf(e[1])>-1?' \u00b7 Asesinato':' \u00b7 Combate')+'</small></div>'});
@@ -647,12 +651,13 @@ if(has("Feign Death"))r.push("Si te quedan las cosas feas, <b>Feign Death</b>.")
 $("rot").innerHTML=decor(r);var nxt=AB.filter(function(a){return a[1]>L})[0];
 $("rn").innerHTML=(g?"En grupo: ":"Subiendo: ")+(nxt?"cuando llegues al nivel "+nxt[1]+" aprenderás <b>"+nxt[0]+"</b>.":"Tienes todas las habilidades de la lista.");$("ln").textContent=L;
 $("ab").innerHTML=AB.map(function(a){var on=a[1]<=L;return'<div class="'+(on?'':'off')+'"><b>'+ai(a[0])+nm(a[0])+'<em>'+(on?'Sí':'Nv. '+a[1])+'</em></b>'+a[2]+'</div>'}).join("");
-$("mp").setAttribute("aria-pressed",!g);$("mv").setAttribute("aria-pressed",g);bar();money();tal()}
+$("mp").setAttribute("aria-pressed",!g);$("mv").setAttribute("aria-pressed",g);bar();money();tal();whx();pets()}
 var K2="trio_v1",ST3={cur:"roro",ch:{}};
 try{var x2=localStorage.getItem(K2);if(x2)ST3=JSON.parse(x2)}catch(e){}
 if(!ST3.ch.roro)ST3.ch.roro={lv:S.lv,done:S.done,mode:S.mode,wp:S.wp};
 ["olga","jank"].forEach(function(k){if(!ST3.ch[k])ST3.ch[k]={lv:6,done:{},mode:"pve",wp:"sw"}});
 if(!CH[ST3.cur])ST3.cur="roro";
+if(!ST3.m2){ST3.m2=1;ST3.ch.roro.wp="dg"}
 function save(){ST3.ch[ST3.cur]={lv:S.lv,done:S.done,mode:S.mode,wp:S.wp};try{localStorage.setItem(K2,JSON.stringify(ST3))}catch(e){}}
 function who(){$("who").innerHTML=Object.keys(CH).map(function(k){return'<button data-k="'+k+'" aria-pressed="'+(k===ST3.cur)+'"><b>'+CH[k].n+'</b><small>'+CH[k].c+'</small></button>'}).join('')}
 function chv(k){var c=ST3.ch[k],ro=CH[k].k==="rogue";S.lv=c.lv;S.done=c.done;S.mode=c.mode;S.wp=c.wp;AB=CD[k].AB;KB=CD[k].KB;ST=CD[k].ST;ORD=[];$("hn").textContent=CH[k].n+" · "+CH[k].c;$("wsw").style.display=ro?"":"none";$("mv").textContent=ro?"PvP en grupo":"Mazmorras en grupo";who()}
@@ -660,6 +665,30 @@ function swc(k){save();ST3.cur=k;chv(k);setLv(S.lv)}
 $("who").onclick=function(e){var b=e.target.closest("button");if(b)swc(b.dataset.k)};
 
 Object.assign(ES,{"Wand Specialization":"Especialización en varitas","Spirit Tap":"Toque de espíritu","Mental Strength":"Fuerza mental","Meditation":"Meditación","Mental Agility":"Agilidad mental","Improved Power Word: Shield":"Palabra de poder: escudo mejorada","Improved Shadow Word: Pain":"Palabra de las sombras: dolor mejorada","Shadow Focus":"Enfoque de las sombras","Shadow Weaving":"Tejido de las sombras","Darkness":"Oscuridad","Improved Revive Pet":"Revivir mascota mejorado","Endurance Training":"Entrenamiento de resistencia","Bestial Swiftness":"Rapidez bestial","Unleashed Fury":"Furia desatada","Ferocity":"Ferocidad","Frenzy":"Frenesí","Hawk Eye":"Ojo de halcón","Efficiency":"Eficiencia"});
+var WH={rogue:{"Stealth":"Antes de acercarte y para reesconderte fuera de combate.","Ambush":"Primer golpe desde sigilo, por la espalda y con daga.","Garrote":"Apertura si no puedes Ambush: sangrado mientras sigues atacando.","Cheap Shot":"Apertura en PvP: aturde 4 s.","Backstab":"Tu generador principal, siempre por la espalda.","Shank":"En cada enfriamiento (10 s) si tu energía está por debajo de 85.","Sinister Strike":"Cuando no puedes ponerte detrás o te falta energía para Backstab.","Slice and Dice":"Con 1-2 puntos al empezar una pelea larga; mantenlo activo.","Rupture":"Con 4-5 puntos si el enemigo vivirá más de 12 s.","Eviscerate":"Con 5 puntos (3-4 si el enemigo está a punto de morir).","Kidney Shot":"Con 3-5 puntos para controlar o cortar una cura.","Kick":"Cuando el enemigo lance un hechizo o se cure.","Gouge":"Si te pegan mucho o para escapar; mira de frente al enemigo.","Evasion":"Con 2 o más enemigos o por debajo del 50% de vida.","Sprint":"Para huir, perseguir o cruzar tramos largos.","Vanish":"Emergencia: sales de combate y te reescondes.","Sap":"Desde sigilo sobre un humanoide fuera de combate.","Riposte":"Justo después de parar un golpe.","Blade Flurry":"Con 2 enemigos cerca o en peleas largas.","Adrenaline Rush":"Peleas largas, para ir sobrado de energía.","Pick Pocket":"Entre combates, en sigilo y por detrás.","Blind":"Para aislar a un segundo rival; no le hagas daño."},
+priest:{"Power Word: Fortitude":"Antes de pelear, a ti y a tu grupo.","Inner Fire":"Mantenlo siempre activo.","Smite":"Para empezar un combate a distancia.","Shadow Word: Pain":"En enemigos que durarán más de 10 s.","Mind Blast":"En cada enfriamiento.","Power Word: Shield":"Cuando te peguen o antes de un pull difícil.","Renew":"Entre combates o sobre el tanque antes de que baje.","Lesser Heal":"Cura barata cuando no hay prisa.","Heal":"Cura grande cuando el objetivo baje del 60%.","Flash Heal":"Emergencias.","Psychic Scream":"Cuando te rodean 2 o más enemigos.","Fade":"En grupo, cuando el enemigo se gira hacia ti.","Dispel Magic":"Para quitar efectos mágicos.","Resurrection":"Tras el combate, a quien haya caído.","Holy Fire":"Apertura si tienes maná.","Devouring Plague":"En peleas largas: te cura mientras daña.","Prayer of Healing":"Cuando varios del grupo estén heridos."},
+hunter:{"Aspect of the Hawk":"Durante el combate, tu aspecto principal.","Aspect of the Monkey":"Antes del 10 o si te pegan cuerpo a cuerpo.","Aspect of the Cheetah":"Solo para viajar, nunca en combate.","Hunter's Mark":"Al empezar, sobre enemigos que van a durar.","Auto Shot":"Siempre activo; no te muevas mientras dispara.","Serpent Sting":"Una vez, en enemigos que durarán.","Arcane Shot":"En cada enfriamiento mientras haya maná.","Aimed Shot":"Para abrir o con maná sobrante; sin moverte.","Multi-Shot":"Con 2 o más enemigos.","Rapid Fire":"En peleas difíciles.","Concussive Shot":"Cuando se acerque, para ganar distancia.","Wing Clip":"Si te alcanzan, para poder alejarte.","Raptor Strike":"Cuerpo a cuerpo, si te alcanzan.","Mend Pet":"Con la mascota por debajo del 50%.","Feign Death":"Cuando te pongan el foco y estés en peligro.","Freezing Trap":"Antes de pelear, sobre un enemigo de más."}};
+var PT=[[10,"Ghostfang","Gato","Dun Morogh","Gato raro nuevo de nivel 10, con aspecto único.","D"],
+[10,"Nightscreech","Ave rapaz","Teldrassil","Raro; las aves rapaces desarman al enemigo (Mine!).","U"],
+[13,"Mystmane","Oso","Isla de Zephras (Shadowgale, hacia 60, 34). Alianza: barco volador desde Dalaran","Oso raro de 1,6 s con Swipe: aguanta y mantiene la atención de varios enemigos. El mejor para subir en solitario.","T"],
+[15,"Savannah Patriarch","Gato","Los Baldíos (niveles 15-16)","1,3 s de ataque, sin esperar a un raro.","D"],
+[19,"Takk the Leaper","Raptor","Los Baldíos","Raptor raro con buen daño.","D"],
+[20,"Kresh","Tortuga","Cuevas de los Lamentos","Shell Shield reduce el daño un 50%: para peleas difíciles.","T"],
+[18,"Slavering Worg","Lobo","Castillo de Colmillo Oscuro (patio, élite, niveles 18-25)","1,2 s de ataque y Furious Howl para el grupo.","U"],
+[23,"Starving Mountain Lion","Gato","Laderas de Trabuquete (niveles 23-24)","1,2 s de ataque: gato rápido.","D"],
+[37,"Broken Tooth","Gato","Tierras Inhóspitas (Badlands), centro y norte cerca de la Fortaleza Angor","1,0 s de ataque: el mejor para PvP contra lanzadores. Raro con mucha competencia.","P"],
+[51,"Ravage","Raptor","Tierras Devastadas (Blasted Lands)","1,3 s de ataque y Tendon Rip.","D"],
+[52,"Spiteflayer","Carroñero","Tierras Devastadas (Blasted Lands, hacia 59, 35)","1,2 s y Screech, que baja el ataque de los enemigos.","P"],
+[55,"Spire Spiderling","Araña","Cumbre de Roca Negra","1,5 s y Web para inmovilizar: muy bueno en PvP.","P"],
+[56,"Bloodaxe Worg","Lobo","Cumbre de Roca Negra","Enseña Furious Howl rango 4 y Bite rango 8.","U"]];
+function pets(){var el=$("pets");if(CH[ST3.cur].k!=="hunter"){el.innerHTML="";return}
+var L=S.lv,RL={D:"Para daño",T:"Para aguantar",U:"Para el grupo",P:"Para PvP"},h='<h3>Mascotas recomendadas por nivel</h3>';
+if(L<10)h+='<div class="note">Aún no puedes domar: la misión de clase llega al nivel 10 y es la que te da <b>Tame Beast</b>.</div>';
+else{h+='<div class="ab">';["D","T","P","U"].forEach(function(r){var b=null;PT.forEach(function(p){if(p[5]===r&&p[0]<=L&&(!b||p[0]>b[0]))b=p});h+='<div><b>'+RL[r]+'<em>'+(b?b[2]:'—')+'</em></b>'+(b?'<b style="color:var(--ac)">'+b[1]+'</b><br>'+b[3]:(r==='T'?'Hasta el nivel 13, cualquier oso o jabalí común de tu nivel aguanta bien.':'Todavía no hay una recomendada para tu nivel.'))+'</div>'});h+='</div>'}
+h+='<h3>Todas, por nivel</h3><ol class="tl">';
+PT.slice().sort(function(a,b){return a[0]-b[0]}).forEach(function(p){h+='<li class="'+(L>=p[0]?'':'')+'" style="'+(L>=p[0]?'':'opacity:.5')+'"><span class="lv2">Nv '+p[0]+'</span><span><b>'+p[1]+'</b> · '+p[2]+' · '+RL[p[5]]+'<br><small>'+p[3]+'. '+p[4]+'</small></span></li>'});
+h+='</ol><p class="en">Solo puedes domar bestias de tu nivel o menor. Lleva una Freezing Trap y limpia los enemigos cercanos. La segunda plaza del establo cuesta 5 de plata y la tercera 5 de oro. Datos de la guía de Skycoach y de Warcraft Tavern; las coordenadas de los raros son orientativas.</p>';el.innerHTML=h}
+function whx(){var m=WH[CH[ST3.cur].k],h='';KB.forEach(function(e){var w=m[e[2]];if(!w||!has(e[2]))return;h+='<div><b>'+ai(e[2])+nm(e[2])+'<em>'+e[0]+'</em></b>'+w+'</div>'});$("wh").innerHTML=h||'<div>Aún no tienes habilidades de esta lista.</div>'}
 var MR={"Wand Specialization":2,"Spirit Tap":5,"Twin Disciplines":5,"Holy Precision":3,"Mental Strength":5,"Inner Focus":1,"Meditation":3,"Mental Agility":3,"Improved Power Word: Shield":3,"Penance":1,"Improved Shadow Word: Pain":2,"Soul Warding":1,"Renewed Hope":5,"Shadow Focus":5,"Mind Flay":1,"Improved Mind Flay":2,"Shadow Reach":2,"Vampiric Embrace":1,"Shadow Weaving":3,"Dark Inspiration":5,"Devouring Contagion":2,"Silence":1,"Darkness":5,"Shadowform":1,"Deadly Aspects":5,"Improved Revive Pet":2,"Focused Fire":2,"Endurance Training":5,"Bestial Swiftness":1,"Pathfinding":2,"Unleashed Fury":5,"Summon Hawk":1,"Ferocity":5,"Intimidation":1,"Bestial Discipline":2,"Frenzy":5,"Bestial Wrath":1,"Hawk Eye":3,"Lethal Attacks":5,"Careful Aim":5,"Rapid Killing":2,"Efficiency":5,"Trueshot Aura":1};
 function pE(s){var o=[];s.split(";").forEach(function(p){var q=p.indexOf(":"),a=[p.slice(0,q),p.slice(q+1)],r=a[0].split("-"),f=+r[0],e=+(r[1]||r[0]);for(var l=f;l<=e;l++)o.push([l,a[1]])});return o}
 var TP={olga:[{h:"Fase 1 · Disciplina con varita",s:"niveles 10 al 39",r:0,E:pE("10-11:Wand Specialization;12-16:Spirit Tap;17-19:Twin Disciplines;20:Holy Precision;21-22:Twin Disciplines;23-24:Mental Strength;25:Inner Focus;26-28:Meditation;29-31:Mental Agility;32-34:Improved Power Word: Shield;35:Penance;36-37:Improved Shadow Word: Pain;38:Soul Warding;39:Renewed Hope")},
